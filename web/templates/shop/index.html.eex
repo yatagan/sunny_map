@@ -1,0 +1,32 @@
+<h2>Shops listing</h2>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Description</th>
+      <th>Lat</th>
+      <th>Lng</th>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+<%= for shop <- @shops do %>
+    <tr>
+      <td><%= shop.title %></td>
+      <td><%= shop.description %></td>
+      <td><%= shop.lat %></td>
+      <td><%= shop.lng %></td>
+
+      <td class="text-right">
+        <%= link "Show", to: shop_path(@conn, :show, shop), class: "btn btn-default btn-xs" %>
+        <%= link "Edit", to: shop_path(@conn, :edit, shop), class: "btn btn-default btn-xs" %>
+        <%= link "Delete", to: shop_path(@conn, :delete, shop), method: :delete, data: [confirm: "Are you sure?"], class: "btn btn-danger btn-xs" %>
+      </td>
+    </tr>
+<% end %>
+  </tbody>
+</table>
+
+<%= link "New shop", to: shop_path(@conn, :new) %>

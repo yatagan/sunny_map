@@ -54,7 +54,7 @@ type Msg
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-  case log "update" msg of
+  case msg of
     JSReady _ ->
       ( model, Cmd.batch [ initJsMap (MapOptions (Point 1.290270 103.851959) 14)
                          , fetchShops] )
@@ -72,7 +72,7 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-  a [href "/admin"] [text "Admin panel"]
+  a [href "/shops"] [text "Edit shops"]
 
 -- SUBSCRIPTIONS
 
@@ -97,7 +97,7 @@ fetchShops : Cmd Msg
 fetchShops =
   let
     url =
-      "http://localhost:8000/shops.txt"
+      "http://localhost:4000/shops.json"
 
     request =
       Http.get url decodeShopList

@@ -1,4 +1,7 @@
 function initMap() {
+  if (typeof elmApp == 'undefined')
+    return;
+
   elmApp.ports.initJsMap.subscribe(function (mapOptions) {
     var mapCanvas = document.getElementById("map");
     var map = new google.maps.Map(mapCanvas, mapOptions);

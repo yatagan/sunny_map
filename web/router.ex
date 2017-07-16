@@ -17,6 +17,8 @@ defmodule SunnyMap.Router do
     pipe_through :browser # Use the default browser stack
 
     get "/", PageController, :index
+    resources "/shops", ShopController
+    get "/shops.json", ShopController, :shops_json
   end
 
   # Other scopes may use custom stacks.
