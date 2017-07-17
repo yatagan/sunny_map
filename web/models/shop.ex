@@ -26,7 +26,11 @@ defmodule SunnyMap.Shop do
       "title": shop.title,
       "description": shop.description,
       "location": %{"lat": shop.lat, "lng": shop.lng},
-      "infowindow": "make me"
+      "infowindow": infowindow(shop)
     }
+  end
+
+  def infowindow(shop) do
+    to_string (:io_lib.format "<b><a href='/shops/~b'>~s</a></b><p>~s</p>", [shop.id, shop.title, shop.description])
   end
 end
