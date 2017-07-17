@@ -97,7 +97,7 @@ fetchShops : Cmd Msg
 fetchShops =
   let
     url =
-      "http://localhost:4000/shops.json"
+      "/shops.json"
 
     request =
       Http.get url decodeShopList
