@@ -33,10 +33,11 @@ function initMap() {
         marker.setMap(map);
 
         google.maps.event.addListener(marker,'click',function() {
-          var infowindow = new google.maps.InfoWindow({
-            content: shop.infowindow
-          });
-          infowindow.open(map, marker);
+          if (!this.infowindow)
+            this.infowindow = new google.maps.InfoWindow({
+              content: shop.infowindow
+            });
+          this.infowindow.open(map, marker);
         });
 
         markers[shop.id] = marker;
