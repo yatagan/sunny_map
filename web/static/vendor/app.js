@@ -9137,7 +9137,7 @@ var _user$project$App$ShopsNearBy = function (a) {
 	return {ctor: 'ShopsNearBy', _0: a};
 };
 var _user$project$App$fetchShops = function () {
-	var url = 'http://localhost:4000/shops.json';
+	var url = '/shops.json';
 	var request = A2(_elm_lang$http$Http$get, url, _user$project$App$decodeShopList);
 	return A2(_elm_lang$http$Http$send, _user$project$App$ShopsNearBy, request);
 }();
