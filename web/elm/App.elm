@@ -6,7 +6,7 @@ import Html.Events exposing (..)
 import Http
 import Debug exposing (log)
 import Json.Decode as Decode exposing (field, string, int, float)
-import Task
+import Task exposing (Task)
 import Geolocation
 
 -- MODEL
@@ -53,7 +53,7 @@ type Msg
   | ShopsNearBy (Result Http.Error (List Shop))
   | RequestLocation
   | GetLocation Geolocation.Location
-  | GetLocationFailure
+  | GetLocationFailure String
   | SetMapLocation Point
 
 -- UPDATE
@@ -64,7 +64,7 @@ update msg model =
     JSReady _ ->
       ( model, Cmd.batch [ initJsMap (MapOptions (Point 1.290270 103.851959) 14)
                          , fetchShops
-                         , Task.attempt processLocation Geolocation.now
+                         , Task.attempt processLocation geolocationTask
                          ] )
 
     BoundsChanged bounds ->
@@ -77,18 +77,21 @@ update msg model =
       ( model, Cmd.none )
 
     RequestLocation ->
-      ( model, Task.attempt processLocation Geolocation.now)
+      ( model, Task.attempt processLocation geolocationTask)
 
     GetLocation location ->
       ( { model | error = "" }, centerJsMap ( Point location.latitude location.longitude ) )
 
-    GetLocationFailure ->
-      ( { model | error = "Can't get geolocation" } , Cmd.none )
+    GetLocationFailure reason ->
+      ( { model | error = "Can't get geolocation: " ++ reason } , Cmd.none )
 
     SetMapLocation location ->
       ( model, centerJsMap location )
 
 
+geolocationTask : Task Geolocation.Error Geolocation.Location
+geolocationTask = 
+  Geolocation.nowWith (Geolocation.Options False (Just 15000) Nothing)
 -- VIEW
 
 view : Model -> Html Msg
@@ -158,8 +161,14 @@ processLocation result =
   case result of
     Ok location ->
       GetLocation location
-    Err _ ->
-      GetLocationFailure
+    Err error ->
+      case error of
+        Geolocation.PermissionDenied reason ->
+          GetLocationFailure reason
+        Geolocation.LocationUnavailable reason ->
+          GetLocationFailure reason
+        Geolocation.Timeout reason ->
+          GetLocationFailure reason
 
 -- MAIN
 

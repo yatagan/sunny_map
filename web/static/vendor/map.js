@@ -30,7 +30,7 @@ function initMap() {
         if (shop.id in markers)
           return;
 
-        var marker = new google.maps.Marker({position: shop.location, icon:new google.maps.MarkerImage("http://www.googlemapsmarkers.com/v1/009900/")});
+        var marker = new google.maps.Marker({position: shop.location});
 
         marker.setMap(map);
 
