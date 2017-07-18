@@ -6,14 +6,14 @@ function initMap() {
     var mapCanvas = document.getElementById("map");
     var map = new google.maps.Map(mapCanvas, mapOptions);
 
-    var marker = new google.maps.Marker({position:mapOptions.center});
-    marker.setMap(map);
-    google.maps.event.addListener(marker,'click',function() {
-      var infowindow = new google.maps.InfoWindow({
-        content: "This is my position"
-      });
-      infowindow.open(map,marker);
-    });
+    function setMyLocation(location) {
+      if (!this.marker) {
+        this.marker = new google.maps.Marker({position: location});
+        this.marker.setMap(map);
+      }
+      map.setCenter(location);
+      this.marker.setPosition(location);
+    }
 
     var markers = {};
 
@@ -22,6 +22,8 @@ function initMap() {
       if (bounds)
         elmApp.ports.boundsChanged.send(bounds.toJSON());
     });
+
+    elmApp.ports.centerJsMap.subscribe(setMyLocation);
 
     elmApp.ports.drawShops.subscribe(function (shops) {
       function drawShop(shop) {

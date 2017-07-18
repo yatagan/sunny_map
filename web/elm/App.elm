@@ -6,12 +6,14 @@ import Html.Events exposing (..)
 import Http
 import Debug exposing (log)
 import Json.Decode as Decode exposing (field, string, int, float)
-
+import Task
+import Geolocation
 
 -- MODEL
 
 type alias Model =
   { shops: (List Shop)
+  , error: String
   }
 
 type alias Shop =
@@ -41,7 +43,7 @@ type alias MapOptions =
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model [], Cmd.none )
+    ( Model [] "", Cmd.none )
 
 -- MESSAGES
 
@@ -49,6 +51,10 @@ type Msg
   = JSReady String
   | BoundsChanged Bounds
   | ShopsNearBy (Result Http.Error (List Shop))
+  | RequestLocation
+  | GetLocation Geolocation.Location
+  | GetLocationFailure
+  | SetMapLocation Point
 
 -- UPDATE
 
@@ -57,7 +63,9 @@ update msg model =
   case msg of
     JSReady _ ->
       ( model, Cmd.batch [ initJsMap (MapOptions (Point 1.290270 103.851959) 14)
-                         , fetchShops] )
+                         , fetchShops
+                         , Task.attempt processLocation Geolocation.now
+                         ] )
 
     BoundsChanged bounds ->
       ( model, fetchShops )
@@ -68,11 +76,29 @@ update msg model =
     ShopsNearBy (Err _) ->
       ( model, Cmd.none )
 
+    RequestLocation ->
+      ( model, Task.attempt processLocation Geolocation.now)
+
+    GetLocation location ->
+      ( { model | error = "" }, centerJsMap ( Point location.latitude location.longitude ) )
+
+    GetLocationFailure ->
+      ( { model | error = "Can't get geolocation" } , Cmd.none )
+
+    SetMapLocation location ->
+      ( model, centerJsMap location )
+
+
 -- VIEW
 
 view : Model -> Html Msg
 view model =
-  a [href "/shops"] [text "Edit shops"]
+  div []
+    [ div [style [("color", "red")]] [text model.error]
+    , a [href "/shops"] [text "Edit shops"]
+    , br [] [], button [onClick RequestLocation] [text "Update location"]
+    , button [onClick (SetMapLocation (Point 1.290270 103.851959))] [text "Set fake location"]
+    ]
 
 -- SUBSCRIPTIONS
 
@@ -88,8 +114,10 @@ subscriptions model =
 
 port jsReady : (String -> msg) -> Sub msg
 port boundsChanged : (Bounds -> msg) -> Sub msg
+
 port initJsMap : (MapOptions) -> Cmd msg
 port drawShops : (List Shop) -> Cmd msg
+port centerJsMap : (Point) -> Cmd msg
 
 -- COMMANDS
 
@@ -122,6 +150,16 @@ decodeShop =
 decodeShopList : Decode.Decoder (List Shop)
 decodeShopList =
   Decode.list decodeShop
+
+-- PRIVATE
+
+processLocation : Result Geolocation.Error Geolocation.Location -> Msg
+processLocation result =
+  case result of
+    Ok location ->
+      GetLocation location
+    Err _ ->
+      GetLocationFailure
 
 -- MAIN
 
